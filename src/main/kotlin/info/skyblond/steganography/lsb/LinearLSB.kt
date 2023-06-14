@@ -5,7 +5,7 @@ import info.skyblond.steganography.prng.RandomStream
 import java.awt.image.BufferedImage
 import java.io.InputStream
 
-abstract class AbstractLSB : LSB {
+abstract class LinearLSB : LSB {
     /**
      * Given the [x] and [y] coordinate of the pixel,
      * the [originalARGB], the [randomStream] and the [messageStream],

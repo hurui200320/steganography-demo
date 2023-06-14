@@ -10,7 +10,7 @@ import info.skyblond.steganography.prng.RandomStream
  *
  * No random is used, use [NopStream] for `randomMessage`.
  * */
-class RGBFixedBit0LSB : AbstractLSB() {
+class RGBFixedBit0LSB : LinearLSB() {
     override fun encodeRandom(
         x: Int, y: Int, originalARGB: Int,
         randomStream: RandomStream, messageStream: MessageStream

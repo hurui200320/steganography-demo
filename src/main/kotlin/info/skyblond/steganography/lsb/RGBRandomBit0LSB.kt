@@ -8,7 +8,7 @@ import info.skyblond.steganography.prng.RandomStream
  * There has a 25% chance for this LSB encoding to skip a pixel.
  * For the rest of 75%, each channel has equal chances to be selected.
  * */
-class RGBRandomBit0LSB : AbstractLSB() {
+class RGBRandomBit0LSB : LinearLSB() {
     override fun encodeRandom(
         x: Int, y: Int, originalARGB: Int,
         randomStream: RandomStream, messageStream: MessageStream

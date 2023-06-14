@@ -9,7 +9,7 @@ import info.skyblond.steganography.prng.RandomStream
  * For the rest of 75%, each channel has equal chances to be selected.
  * For each channel, this encoding randomly chooses bit 0 or bit 1 for encoding.
  * */
-class RGBRandomBit01LSB : AbstractLSB() {
+class RGBRandomBit01LSB : LinearLSB() {
     override fun encodeRandom(
         x: Int, y: Int, originalARGB: Int,
         randomStream: RandomStream, messageStream: MessageStream
