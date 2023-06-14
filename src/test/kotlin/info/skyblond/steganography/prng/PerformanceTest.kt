@@ -34,4 +34,23 @@ class PerformanceTest {
             }
         }
     }
+
+    @Test
+    fun test2() {
+        val seed = SecureRandom().generateSeed(32)
+        val vmpc = VMPCStream(seed)
+        var count0 = 0
+        var count1 = 0
+        var count2 = 0
+        for (i in 1..n) {
+            when(vmpc.read() % 3){
+                0 -> count0++
+                1 -> count1++
+                2 -> count2++
+            }
+        }
+        println(count0)
+        println(count1)
+        println(count2)
+    }
 }
