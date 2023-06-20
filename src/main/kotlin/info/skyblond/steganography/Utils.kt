@@ -3,6 +3,8 @@ package info.skyblond.steganography
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
+import org.apache.commons.math3.complex.Complex
+import java.awt.Color
 import java.awt.image.BufferedImage
 import java.io.File
 import java.security.MessageDigest
@@ -61,3 +63,25 @@ fun String.md5(): String {
     digest.update(this.encodeToByteArray())
     return digest.digest().toHexString()
 }
+
+
+operator fun Complex.plus(complex: Complex): Complex = this.add(complex)
+operator fun Complex.minus(complex: Complex): Complex = this.add(complex.negate())
+operator fun Complex.times(complex: Complex): Complex = this.multiply(complex)
+operator fun Complex.times(double: Double): Complex = this.multiply(double)
+operator fun Complex.div(complex: Complex): Complex = this.divide(complex)
+operator fun Complex.div(double: Double): Complex = this.divide(double)
+operator fun Complex.unaryMinus(): Complex = this.negate()
+
+/**
+ * std::vector<T,Allocator>::insert.
+ *
+ * Insert [count] copies of the [value] before [pos]
+ * */
+fun <T> MutableList<T>.add(pos: Int, count: Int, value: T) {
+    repeat(count){
+        this.add(pos, value)
+    }
+}
+
+fun Color(r: Double, g: Double, b: Double): Color = Color(r.toFloat(), g.toFloat(), b.toFloat())
