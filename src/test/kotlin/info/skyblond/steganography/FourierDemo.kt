@@ -1,7 +1,7 @@
 package info.skyblond.steganography
 
-import info.skyblond.steganography.fourier.BlackOnlyHorizontalFourier
-import info.skyblond.steganography.fourier.BlackOnlyVerticalFourier
+import info.skyblond.steganography.fourier.BlackAndWhiteHorizontalFourier
+import info.skyblond.steganography.fourier.BlackAndWhiteVerticalFourier
 import info.skyblond.steganography.fourier.Fourier
 import info.skyblond.steganography.fourier.toNamedList
 import kotlinx.coroutines.Dispatchers
@@ -11,27 +11,25 @@ import java.io.File
 import javax.imageio.ImageIO
 
 object FourierDemo {
+    private const val amp = 0.2
+
     @JvmStatic
     fun main(args: Array<String>): Unit = runBlocking(Dispatchers.Default) {
-        val energyLogKList = listOf(0.05, 0.1, 0.5, 1.0, 1.5)
-
         File("./pic").listFiles()!!
             .filter { it.isFile && it.extension in listOf("jpg", "png") }
             .forEach {
-                val md5 = it.path.md5()
                 println("Found file: ${it.path}")
                 val image = ImageIO.read(it)
-                val outputDir = File("./output/fft_demo/$md5")
+                val outputDir = File("./output/fft_demo/${it.name.replace(".", "_")}")
                 println("Output dir: ${outputDir.path}")
 
                 val (fourier, mask) = getFourierAndMask(image)
-                testFourier(fourier, image, mask, energyLogKList, outputDir)
+                testFourier(fourier, image, mask, outputDir)
             }
     }
 
-
-    private val vertical = BlackOnlyVerticalFourier() to ImageIO.read(File("./pic/fft_mask/mask2_v.png"))
-    private val horizontal = BlackOnlyHorizontalFourier() to ImageIO.read(File("./pic/fft_mask/mask2_h.png"))
+    private val vertical = BlackAndWhiteVerticalFourier(amp) to ImageIO.read(File("./pic/fft_mask/mask2_v.png"))
+    private val horizontal = BlackAndWhiteHorizontalFourier(amp) to ImageIO.read(File("./pic/fft_mask/mask2_h.png"))
 
     /**
      * Get Fourier based on the ratio.
@@ -41,8 +39,7 @@ object FourierDemo {
 
     private suspend fun testFourier(
         fourier: Fourier, image: BufferedImage,
-        mask: BufferedImage, energyLogKList: List<Double>,
-        outputDir: File
+        mask: BufferedImage, outputDir: File
     ) = runCatching {
         println("Applying steganography...")
         // here we use the same mask for both RGB
@@ -51,18 +48,16 @@ object FourierDemo {
         image.writePNG(File(outputDir, "ori_copy.png"))
         resultImage.writePNG(File(outputDir, "fft_result.png"))
 
+        println("Decoding recovered image...")
+        val images = fourier.decode(resultImage, amp)
+        images.toNamedList().forEach { (image, channelName) ->
+            val filename = "fft_recovered_${channelName}_energyLog_${amp}.png"
+            image.writePNG(File(outputDir, filename))
+        }
+
         println("Analyzing image...")
         analyze("ori", image, outputDir)
         analyze("fft", resultImage, outputDir)
-
-        println("Decoding recovered image...")
-        fourier.decode(resultImage, energyLogKList).zip(energyLogKList)
-            .forEach { (images, k) ->
-                images.toNamedList().forEach { (image, channelName) ->
-                    val filename = "fft_recovered_${channelName}_energyLog_${k}.png"
-                    image.writePNG(File(outputDir, filename))
-                }
-            }
     }.onFailure { it.printStackTrace(); println("Failed to encode, skip to next one...") }
 
     private suspend fun analyze(name: String, image: BufferedImage, outputDir: File) {

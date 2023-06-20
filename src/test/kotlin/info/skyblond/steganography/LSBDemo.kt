@@ -60,10 +60,9 @@ object LSBDemo {
         File("./pic").listFiles()!!
             .filter { it.isFile && it.extension in listOf("jpg", "png") }
             .forEach {
-                val md5 = it.path.md5()
                 println("Found file: ${it.path}")
                 val image = ImageIO.read(it)
-                val outputDir = File("./output/lsb_demo/$md5").apply { mkdirs() }
+                val outputDir = File("./output/lsb_demo/${it.name.replace(".", "_")}").apply { mkdirs() }
                 println("Output dir: ${outputDir.path}")
                 lsbList.indices.forEach { lsbIndex ->
                     randomStreamList.indices.forEach { randomIndex ->

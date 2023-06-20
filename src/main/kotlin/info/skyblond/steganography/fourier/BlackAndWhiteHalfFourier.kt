@@ -1,5 +1,8 @@
 package info.skyblond.steganography.fourier
 
+import info.skyblond.steganography.div
+import info.skyblond.steganography.plus
+import info.skyblond.steganography.times
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import org.apache.commons.math3.complex.Complex
@@ -8,9 +11,11 @@ import java.awt.image.BufferedImage
 
 /**
  * For half-encodings, like upper half, or left half, etc.
- * Only encode black info by setting the complex to zero.
+ * Only encode black and white by scaling the complex (abs).
  * */
-abstract class BlackOnlyHalfFourier : Fourier {
+abstract class BlackAndWhiteHalfFourier(
+    private val targetAmp: Double
+) : Fourier {
     /**
      * Throw [IllegalArgumentException] if mask size is not good
      * */
@@ -35,10 +40,17 @@ abstract class BlackOnlyHalfFourier : Fourier {
         // apply encoding
         for (y in 0 until mask.height) {
             for (x in 0 until mask.width) {
-                // skip non-black pixel
-                if (mask.getRGB(x, y) != Color.BLACK.rgb) continue
-                channel[x0 + x, y0 + y] = Complex.ZERO
-                channel[x1 - x, y1 - y] = Complex.ZERO
+                // sometimes it's not strictly symmetric, so take the average
+                val oldComplex = (channel[x0 + x, y0 + y] + channel[x1 - x, y1 - y]) / 2.0
+                val targetAbs = 9.0 / targetAmp
+                val oldAbs = oldComplex.abs()
+                val newComplex = when(mask.getRGB(x,y)) {
+                    Color.BLACK.rgb -> Complex.ZERO
+                    Color.WHITE.rgb -> if (oldAbs < targetAbs) oldComplex * (targetAbs / oldAbs) else oldComplex
+                    else -> continue
+                }
+                channel[x0 + x, y0 + y] = newComplex
+                channel[x1 - x, y1 - y] = newComplex
             }
         }
     }

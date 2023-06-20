@@ -7,7 +7,6 @@ import org.apache.commons.math3.complex.Complex
 import java.awt.Color
 import java.awt.image.BufferedImage
 import java.io.File
-import java.security.MessageDigest
 import javax.imageio.IIOImage
 import javax.imageio.ImageIO
 import javax.imageio.ImageTypeSpecifier
@@ -58,13 +57,6 @@ suspend fun BufferedImage.writePNG(target: File, compressionQuality: Double = 0.
     }
 }
 
-fun String.md5(): String {
-    val digest = MessageDigest.getInstance("MD5")
-    digest.update(this.encodeToByteArray())
-    return digest.digest().toHexString()
-}
-
-
 operator fun Complex.plus(complex: Complex): Complex = this.add(complex)
 operator fun Complex.minus(complex: Complex): Complex = this.add(complex.negate())
 operator fun Complex.times(complex: Complex): Complex = this.multiply(complex)
@@ -79,7 +71,7 @@ operator fun Complex.unaryMinus(): Complex = this.negate()
  * Insert [count] copies of the [value] before [pos]
  * */
 fun <T> MutableList<T>.add(pos: Int, count: Int, value: T) {
-    repeat(count){
+    repeat(count) {
         this.add(pos, value)
     }
 }

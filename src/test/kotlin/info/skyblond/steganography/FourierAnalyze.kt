@@ -1,6 +1,6 @@
 package info.skyblond.steganography
 
-import info.skyblond.steganography.fourier.BlackOnlyHalfFourier
+import info.skyblond.steganography.fourier.BlackAndWhiteHalfFourier
 import info.skyblond.steganography.fourier.toNamedList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
@@ -15,7 +15,7 @@ object FourierAnalyze {
     @JvmStatic
     fun main(args: Array<String>): Unit = runBlocking(Dispatchers.Default) {
         val outputDir = File("./output/fft_analyze").apply { mkdirs() }
-        val energyLogKList = listOf(0.05, 0.1, 0.5, 1.0)
+        val energyLogKList = listOf(0.05, 0.1, 0.2, 0.5)
 
         File("./output/fft_input").listFiles()!!
             .filter { it.isFile && it.extension in listOf("jpg", "png") }
@@ -37,7 +37,7 @@ object FourierAnalyze {
 
 
     // only need for decoding, aka show the FFT result
-    private val fourier = object : BlackOnlyHalfFourier() {
+    private val fourier = object : BlackAndWhiteHalfFourier(0.0) {
         override fun checkInputSize(
             width: Int, height: Int, mask: BufferedImage
         ) = TODO("Not yet implemented")

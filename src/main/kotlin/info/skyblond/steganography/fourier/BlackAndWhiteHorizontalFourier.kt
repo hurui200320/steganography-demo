@@ -5,7 +5,7 @@ import java.awt.image.BufferedImage
 /**
  * Encode the data horizontally, aka using full width and half of the height.
  * */
-class BlackOnlyHorizontalFourier : BlackOnlyHalfFourier() {
+class BlackAndWhiteHorizontalFourier(targetAmp: Double) : BlackAndWhiteHalfFourier(targetAmp) {
     override fun checkInputSize(width: Int, height: Int, mask: BufferedImage) {
         require(mask.height < height / 2) { "Mask too big" }
     }
@@ -16,7 +16,8 @@ class BlackOnlyHorizontalFourier : BlackOnlyHalfFourier() {
         val y0 = height / 2 - mask.height
         // bottom right
         val x1 = width / 2 + mask.width / 2
-        val y1 = height / 2 + mask.height
+        // extra 1 px to avoid axis
+        val y1 = height / 2 + mask.height + 1
         return (x0 to y0) to (x1 to y1)
     }
 }
