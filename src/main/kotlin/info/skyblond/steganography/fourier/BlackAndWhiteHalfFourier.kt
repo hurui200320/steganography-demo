@@ -1,7 +1,5 @@
 package info.skyblond.steganography.fourier
 
-import info.skyblond.steganography.div
-import info.skyblond.steganography.plus
 import info.skyblond.steganography.times
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -20,42 +18,45 @@ abstract class BlackAndWhiteHalfFourier(
      * Throw [IllegalArgumentException] if mask size is not good
      * */
     protected abstract fun checkInputSize(width: Int, height: Int, mask: BufferedImage)
+
     /**
      * Calculate the center box for encoding.
      * Return (x0,y0) and (x1,y1), where point 0 is the top left of the box,
      * and point 1 is bottom right of the box.
+     *
+     * This must ensure the symmetry,
+     * aka channel[x0 + x, y0 + y] and channel[x1 - x, y1 - y] are conjugated.
      * */
     protected abstract fun calculateBox(
         width: Int, height: Int,
         mask: BufferedImage
     ): Pair<Pair<Int, Int>, Pair<Int, Int>>
 
-    private suspend fun encodeChannel(channel: ComplexChannel, mask: BufferedImage) {
+    private fun encodeChannel(channel: ComplexChannel, mask: BufferedImage) {
         val height = channel.size
         val width = channel[0].size
         checkInputSize(width, height, mask)
-        val (p0 ,p1) = calculateBox(width, height, mask)
-        val (x0,y0) = p0
-        val (x1,y1) = p1
+        val (p0, p1) = calculateBox(width, height, mask)
+        val (x0, y0) = p0
+        val (x1, y1) = p1
         // apply encoding
         for (y in 0 until mask.height) {
             for (x in 0 until mask.width) {
-                // sometimes it's not strictly symmetric, so take the average
-                val oldComplex = (channel[x0 + x, y0 + y] + channel[x1 - x, y1 - y]) / 2.0
+                val oldComplex = channel[x0 + x, y0 + y]
                 val targetAbs = 9.0 / targetAmp
                 val oldAbs = oldComplex.abs()
-                val newComplex = when(mask.getRGB(x,y)) {
+                val newComplex = when (mask.getRGB(x, y)) {
                     Color.BLACK.rgb -> Complex.ZERO
                     Color.WHITE.rgb -> if (oldAbs < targetAbs) oldComplex * (targetAbs / oldAbs) else oldComplex
                     else -> continue
                 }
                 channel[x0 + x, y0 + y] = newComplex
-                channel[x1 - x, y1 - y] = newComplex
+                channel[x1 - x, y1 - y] = newComplex.conjugate()
             }
         }
     }
 
-    private suspend fun encodeChannelOrNull(channel: ComplexChannel, mask: BufferedImage?): ComplexChannel =
+    private fun encodeChannelOrNull(channel: ComplexChannel, mask: BufferedImage?): ComplexChannel =
         channel.also { if (mask != null) encodeChannel(it, mask) }
 
     final override suspend fun encode(

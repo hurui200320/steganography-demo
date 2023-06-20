@@ -14,8 +14,8 @@ class BlackAndWhiteVerticalFourier(targetAmp: Double) : BlackAndWhiteHalfFourier
         // top left
         val x0 = width / 2 - mask.width
         val y0 = height / 2 - mask.height / 2
-        // bottom right, extra 1 px to avoid axis
-        val x1 = width / 2 + mask.width + 1
+        // bottom right
+        val x1 = width / 2 + mask.width
         val y1 = height / 2 + mask.height / 2
         return (x0 to y0) to (x1 to y1)
     }
