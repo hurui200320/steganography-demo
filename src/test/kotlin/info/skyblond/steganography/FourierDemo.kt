@@ -30,6 +30,8 @@ object FourierDemo {
 
     private val vertical = BlackAndWhiteVerticalFourier(amp) to ImageIO.read(File("./pic/fft_mask/mask2_v.png"))
     private val horizontal = BlackAndWhiteHorizontalFourier(amp) to ImageIO.read(File("./pic/fft_mask/mask2_h.png"))
+//    private val vertical = BlackAndWhiteVerticalFourier(amp) to ImageIO.read(File("./pic/fft_mask/mask.png"))
+//    private val horizontal = BlackAndWhiteHorizontalFourier(amp) to ImageIO.read(File("./pic/fft_mask/mask.png"))
 
     /**
      * Get Fourier based on the ratio.
