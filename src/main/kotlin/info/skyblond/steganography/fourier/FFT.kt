@@ -9,8 +9,8 @@ import org.apache.commons.math3.primes.Primes
 import org.apache.commons.math3.transform.DftNormalization
 import org.apache.commons.math3.transform.FastFourierTransformer
 import org.apache.commons.math3.transform.TransformType
-import kotlin.math.cos
-import kotlin.math.sin
+import org.apache.commons.math3.util.FastMath.cos
+import org.apache.commons.math3.util.FastMath.sin
 
 /**
  * Calculate FFT in any size.
