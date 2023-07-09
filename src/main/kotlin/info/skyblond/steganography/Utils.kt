@@ -12,6 +12,7 @@ import javax.imageio.ImageIO
 import javax.imageio.ImageTypeSpecifier
 import javax.imageio.ImageWriteParam
 import javax.imageio.stream.FileImageOutputStream
+import kotlin.math.roundToInt
 
 fun ByteArray.toHexString(): String = joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
 
@@ -36,7 +37,8 @@ fun Int.toBitString(): String = this.toUInt().toString(2)
     .chunked(8).joinToString("_")
 
 /**
- * Write PNG with the highest compression. Take more time, but result in smaller file.
+ * Write PNG with the compression.
+ * Take time, but result in a small file.
  *
  * 0.0 means highest compression, which takes a lot of time.
  * 1.0 means no compression.
@@ -52,6 +54,29 @@ suspend fun BufferedImage.writePNG(target: File, compressionQuality: Double = 0.
         writer.output = out
         withContext(Dispatchers.IO) {
             writer.write(null, IIOImage(this@writePNG, null, null), param)
+            writer.dispose()
+        }
+    }
+}
+
+/**
+ * Write JPEG with compression.
+ * Reduce details but got smaller file.
+ *
+ * 0.0 means highest compression, lost a lot of details.
+ * 1.0 means no compression.
+ * */
+suspend fun BufferedImage.writeJPG(target: File, compressionQuality: Double = 0.8): Unit = coroutineScope {
+    FileImageOutputStream(target).use { out ->
+        val type = ImageTypeSpecifier.createFromRenderedImage(this@writeJPG)
+        val writer = ImageIO.getImageWriters(type, "jpg").next()
+        val param = writer.defaultWriteParam
+        require(param.canWriteCompressed())
+        param.compressionMode = ImageWriteParam.MODE_EXPLICIT
+        param.compressionQuality = compressionQuality.toFloat()
+        writer.output = out
+        withContext(Dispatchers.IO) {
+            writer.write(null, IIOImage(this@writeJPG, null, null), param)
             writer.dispose()
         }
     }
@@ -77,3 +102,16 @@ fun <T> MutableList<T>.add(pos: Int, count: Int, value: T) {
 }
 
 fun Color(r: Double, g: Double, b: Double): Color = Color(r.toFloat(), g.toFloat(), b.toFloat())
+
+fun Color.toYUV(): Triple<Double, Double, Double> =
+    Triple(
+        (0.299 * this.red) + (0.587 * this.green) + (0.114 * this.blue),
+        -(0.147 * this.red) - (0.289 * this.green) + (0.436 * this.blue),
+        (0.615 * this.red) - (0.515 * this.green) - (0.100 * this.blue)
+    )
+
+fun yuvToRGB(y: Double, u: Double, v: Double): Color = Color(
+    (y + (1.140 * v)).roundToInt().coerceIn(0, 255),
+    (y - (-0.394 * u) - (0.581 * v)).roundToInt().coerceIn(0, 255),
+    (y + (2.032 * u)).roundToInt().coerceIn(0, 255)
+)
